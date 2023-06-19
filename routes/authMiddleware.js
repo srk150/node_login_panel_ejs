@@ -1,3 +1,5 @@
+const jwt = require("jsonwebtoken");
+
 // authMiddleware.js
 const authMiddleware = (protectedRoutes) => {
   return (req, res, next) => {
@@ -16,4 +18,32 @@ const authMiddleware = (protectedRoutes) => {
   };
 };
 
-module.exports = authMiddleware;
+function authenticateToken(token) {
+  if (token == null) return res.sendStatus(401);
+  // jwt.verify(token, "secretKey", (err, user) => {
+  //   if (err) return res.sendStatus(403);
+  //   req.user = user;
+  //   next();
+  // });
+}
+
+function validateToken(token) {
+  try {
+    const decodedToken = jwt.verify(token, "secretKey");
+    return {
+      isValid: true,
+      payload: decodedToken,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      error: error.message,
+    };
+  }
+}
+
+module.exports = {
+  authMiddleware,
+  authenticateToken,
+  validateToken,
+};

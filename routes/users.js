@@ -4,7 +4,11 @@ var dbConn = require("../lib/db");
 
 const nodemailer = require("nodemailer");
 var ejs = require("ejs");
-const authMiddleware = require("./authMiddleware");
+const {
+  authMiddleware,
+  authenticateToken,
+  validateToken,
+} = require("./authMiddleware");
 
 // Create a transporter object using SMTP
 const transporter = nodemailer.createTransport({
@@ -16,7 +20,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Apply the authMiddleware to specific routes
-const protectedRoutes = ["/home"]; // Specify the routes that require authentication
+const protectedRoutes = ["/home"]; //Specify the routes that require authentication
 router.use(authMiddleware(protectedRoutes));
 
 // display user page
