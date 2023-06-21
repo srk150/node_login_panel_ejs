@@ -1,0 +1,15 @@
+$ mkdir express-gmail-login
+$ cd express-gmail-login
+$ npm init -y
+$ npm install express passport passport-google-oauth20
+ 
+
+ api -key = AIzaSyCnMHbJXZX6NTeGqL_cw509XXjJ8YwomOM
+
+
+cliewnt id=  434870003923-orvsm9s97n8q4vohbm2k4au50qed15dr.apps.googleusercontent.com
+
+secretKey = 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
+
+
+

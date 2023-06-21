@@ -7,6 +7,9 @@ var mysql = require("mysql");
 var connection = require("./lib/db");
 var usersRouter = require("./routes/users");
 const userController = require("./controller/userController");
+const authController = require("./controller/authController");
+
+let dotenv = require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -27,27 +30,24 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use(
   session({
-    cookie: { maxAge: 60000 },
-    store: new session.MemoryStore(),
-    saveUninitialized: true,
-    resave: "true",
-    secret: "secret",
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: false,
   })
 );
 
 app.use(flash());
 app.use("/users", usersRouter);
-// app.get("/api/:id", userController.getUser);
+app.use("/auth", authController);
 
 //api for singup
 app.post("/api/newuser", userController.newuseradd);
 app.post("/api/doLogin", userController.signin);
 app.post("/api/checkauth", userController.checkauth);
-app.post("/api/isvalid", userController.isvalid);
+app.post("/api/checkvalidtoken", userController.checkvalidtoken);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
 app.listen(3000);

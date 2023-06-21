@@ -154,7 +154,7 @@ exports.signin = (req, res) => {
   );
 };
 
-exports.isvalid = (req, res) => {
+exports.checkvalidtoken = (req, res) => {
   const token =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODcxNzU5OTN9.EVGj-YCMb2t32SuV8RZUIPnNxGpbab3bPGrZU7mTjbI";
   const result = validateToken(token);
@@ -174,11 +174,14 @@ exports.checkauth = (req, res) => {
 
   const token =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2ODcxNzU5OTN9.EVGj-YCMb2t32SuV8RZUIPnNxGpbab3bPGrZU7mTjbI";
-  const result = validateToken(token);
+  const result = authenticateToken(token);
 
   if (result.isValid) {
     res.json({ message: "Protected route accessed successfully!" });
   } else {
     console.error("Token is invalid:", result.error);
+    res.json({ message: "Token is invalid:" });
   }
 };
+
+exports.checkauth = (req, res) => {};

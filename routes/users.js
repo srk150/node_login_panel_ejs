@@ -1,9 +1,13 @@
 var express = require("express");
 var router = express.Router();
 var dbConn = require("../lib/db");
+const bcrypt = require("bcrypt");
 
 const nodemailer = require("nodemailer");
+
 var ejs = require("ejs");
+let dotenv = require("dotenv").config();
+
 const {
   authMiddleware,
   authenticateToken,
@@ -80,18 +84,25 @@ router.post("/dologin", function (req, res, next) {
         // if user found
         else {
           for (var count = 0; count < rows.length; count++) {
-            if (rows[count].password == password) {
-              req.session.userId = rows[count].id;
-              req.session.email = rows[count].email;
-              req.session.name = rows[count].name;
-              req.session.loggedin = true;
+            roweId = rows[count].id;
+            rowemail = rows[count].email;
+            rowname = rows[count].name;
+            rowpass = rows[count].password;
 
-              req.flash("success", "Welcome " + rows[count].name + "!");
-              res.redirect("/users/home");
-            } else {
-              req.flash("error", "Incorrect Password");
-              res.redirect("/users");
-            }
+            bcrypt.compare(password, rowpass).then((isMatch) => {
+              if (isMatch === false) {
+                req.flash("error", "Incorrect Password");
+                res.redirect("/users");
+              } else {
+                req.session.userId = roweId;
+                req.session.email = rowemail;
+                req.session.name = rowname;
+                req.session.loggedin = true;
+
+                req.flash("success", "Welcome " + rowname + "!");
+                res.redirect("/users/home");
+              }
+            });
           }
         }
       }
@@ -128,22 +139,38 @@ router.post("/add", function (req, res, next) {
     };
 
     // insert query
-    dbConn.query("INSERT INTO users SET ?", form_data, function (err, result) {
-      //if(err) throw err
-      if (err) {
-        req.flash("error", err);
+    bcrypt
+      .hash(password, 8)
+      .then((hash) => {
+        //set the password to hash value
+        form_data.password = hash;
+      })
+      .then(() => {
+        dbConn.query(
+          "INSERT INTO users SET ?",
+          form_data,
+          function (err, result) {
+            //if(err) throw err
+            if (err) {
+              req.flash("error", err);
 
-        // render to add.ejs
-        res.render("users/add", {
-          name: form_data.name,
-          email: form_data.email,
-          password: form_data.password,
-        });
-      } else {
-        req.flash("success", "User successfully added");
-        res.redirect("/users/home");
-      }
-    });
+              // render to add.ejs
+              res.render("users/add", {
+                name: form_data.name,
+                email: form_data.email,
+                password: form_data.password,
+              });
+            } else {
+              req.session.name = form_data.name;
+              req.session.email = form_data.email;
+              req.session.loggedin = true;
+
+              req.flash("success", "Welcome " + form_data.name + "!");
+              res.redirect("/users/home");
+            }
+          }
+        );
+      });
   }
 });
 
@@ -206,27 +233,35 @@ router.post("/update/:id", function (req, res, next) {
       password: password,
     };
     // update query
-    dbConn.query(
-      "UPDATE users SET ? WHERE id = " + id,
-      form_data,
-      function (err, result) {
-        //if(err) throw err
-        if (err) {
-          // set flash message
-          req.flash("error", err);
-          // render to edit.ejs
-          res.render("users/edit", {
-            id: req.params.id,
-            name: form_data.name,
-            email: form_data.email,
-            password: form_data.password,
-          });
-        } else {
-          req.flash("success", "User successfully updated");
-          res.redirect("/users/home");
-        }
-      }
-    );
+    bcrypt
+      .hash(password, 8)
+      .then((hash) => {
+        //set the password to hash value
+        form_data.password = hash;
+      })
+      .then(() => {
+        dbConn.query(
+          "UPDATE users SET ? WHERE id = " + id,
+          form_data,
+          function (err, result) {
+            //if(err) throw err
+            if (err) {
+              // set flash message
+              req.flash("error", err);
+              // render to edit.ejs
+              res.render("users/edit", {
+                id: req.params.id,
+                name: form_data.name,
+                email: form_data.email,
+                password: form_data.password,
+              });
+            } else {
+              req.flash("success", "User successfully updated");
+              res.redirect("/users/home");
+            }
+          } //
+        );
+      });
   }
 });
 
