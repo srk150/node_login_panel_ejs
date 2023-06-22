@@ -420,4 +420,86 @@ function sendEmail(transporter, form_data, subject, html, callback) {
   );
 }
 
+router.get("/listcat", function (req, res, next) {
+  //render to html pages
+  // res.render("users/cat");
+
+  dbConn.query("SELECT * FROM category ORDER BY id desc", function (err, rows) {
+    if (err) {
+      req.flash("error", err);
+      // render to views/users/index.ejs
+      res.render("users/cat", { data: "" });
+    } else {
+      // render to views/users/index.ejs
+      res.render("users/cat", { data: rows });
+    }
+  });
+});
+
+router.post("/add-category", function (req, res, next) {
+  const category = req.body.category;
+  let errors = false;
+  if (category == "") {
+    errors = true;
+
+    res.json({ status: false, message: "Please Fill Category!" });
+  }
+
+  // if no error
+  if (!errors) {
+    var form_data = {
+      cat: category,
+    };
+
+    dbConn.query(
+      "INSERT INTO category SET ?",
+      form_data,
+      function (err, result) {
+        //if(err) throw err
+        if (err) {
+          req.flash("error", err);
+
+          // render to add.ejs
+          res.render("users/listcat", {
+            category: category,
+          });
+        } else {
+          // Set a flash message
+          // req.flash("success", "Category added successfully!");
+
+          // Send a response back to the client
+          res.json({ status: true, message: "Category added successfully!" });
+        }
+      }
+    );
+  }
+});
+
+router.post("/deleteCategory/:id", function (req, res) {
+  const catId = req.params.id;
+  console.log(catId);
+  let errors = false;
+
+  if (catId == "") {
+    errors = true;
+
+    res.json({ status: false, message: "Id Not Found!" });
+  }
+
+  // if no error
+  if (!errors) {
+    dbConn.query(
+      "DELETE FROM category WHERE id = " + catId,
+      function (err, result) {
+        if (err) {
+          // req.flash("error", err);
+          console.log(err);
+        } else {
+          res.json({ status: true, message: "Category deleted successfully!" });
+        }
+      }
+    );
+  }
+});
+
 module.exports = router;
